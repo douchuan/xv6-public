@@ -6,9 +6,12 @@
 
 // Parsed command representation
 #define EXEC  1
+//重定向，parseredirs
 #define REDIR 2
 #define PIPE  3
+//多条命令
 #define LIST  4
+//后台执行
 #define BACK  5
 
 #define MAXARGS 10
@@ -203,6 +206,9 @@ execcmd(void)
   return (struct cmd*)cmd;
 }
 
+//file, 需要open的file
+//mode, open file 的标志
+//fd, 要关闭的fd
 struct cmd*
 redircmd(struct cmd *subcmd, char *file, char *efile, int mode, int fd)
 {
@@ -262,6 +268,9 @@ backcmd(struct cmd *subcmd)
 char whitespace[] = " \t\r\n\v";
 char symbols[] = "<|>&;()";
 
+//token parser
+//q， token 的起始位置
+//eq, token 的结束为止 
 int
 gettoken(char **ps, char *es, char **q, char **eq)
 {
@@ -269,6 +278,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
   int ret;
 
   s = *ps;
+  //skip whitespace
   while(s < es && strchr(whitespace, *s))
     s++;
   if(q)
@@ -293,6 +303,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
     }
     break;
   default:
+    //字母
     ret = 'a';
     while(s < es && !strchr(whitespace, *s) && !strchr(symbols, *s))
       s++;
@@ -303,10 +314,15 @@ gettoken(char **ps, char *es, char **q, char **eq)
 
   while(s < es && strchr(whitespace, *s))
     s++;
+  //update ps
   *ps = s;
   return ret;
 }
 
+
+//去掉 **ps 头部空格；去掉空格后，如果首字母包含于toks，返回true
+//ps, string pointer
+//es, end string pointer
 int
 peek(char **ps, char *es, char *toks)
 {
